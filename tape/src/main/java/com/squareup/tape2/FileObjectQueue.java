@@ -8,16 +8,16 @@ import java.util.Iterator;
 import java.util.List;
 
 final class FileObjectQueue<T> extends ObjectQueue<T> {
-  /** Backing storage implementation. */
-  private final QueueFile queueFile;
   /** Reusable byte output buffer. */
   private final DirectByteArrayOutputStream bytes = new DirectByteArrayOutputStream();
+  /** Backing storage implementation. */
+  private final QueueFile queueFile;
   /** Converts between bytes and objects. */
   @Private final Converter<T> converter;
 
-  FileObjectQueue(File file, Converter<T> converter) throws IOException {
+  FileObjectQueue(QueueFile queueFile, Converter<T> converter) throws IOException {
+    this.queueFile = queueFile;
     this.converter = converter;
-    this.queueFile = new QueueFile.Builder(file).build();
   }
 
   @Override public File file() {

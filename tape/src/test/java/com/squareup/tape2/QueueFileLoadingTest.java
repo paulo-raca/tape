@@ -74,10 +74,11 @@ public class QueueFileLoadingTest {
   @Test(expected = IOException.class)
   public void testAddWithReadOnlyFile_missesMonitor() throws Exception {
     testFile = copyTestFile(EMPTY_SERIALIZED_QUEUE);
+    QueueFile queueFile = new QueueFile.Builder(testFile).build();
 
     // Should throw an exception.
     FileObjectQueue<String> qf =
-        new FileObjectQueue<>(testFile, new FileObjectQueue.Converter<String>() {
+        new FileObjectQueue<>(queueFile, new FileObjectQueue.Converter<String>() {
           @Override public String from(byte[] bytes) throws IOException {
             return null;
           }
