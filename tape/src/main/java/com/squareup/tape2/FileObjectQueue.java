@@ -19,7 +19,7 @@ final class FileObjectQueue<T> extends ObjectQueue<T> {
   FileObjectQueue(File file, Converter<T> converter) throws IOException {
     this.file = file;
     this.converter = converter;
-    this.queueFile = new QueueFile(file);
+    this.queueFile = new QueueFile.Builder(file).build();
   }
 
   @Override public File file() {

@@ -47,6 +47,8 @@ import static java.lang.Math.min;
  * power goes out while writing a segment, the segment will contain garbage and the file will be
  * corrupt. We'll add journaling support so this class can be used with more file systems later.
  *
+ * Construct instances with {@link Builder}.
+ *
  * @author Bob Lee (bob@squareup.com)
  */
 public final class QueueFile implements Closeable, Iterable<byte[]> {
@@ -112,24 +114,6 @@ public final class QueueFile implements Closeable, Iterable<byte[]> {
   private final boolean zero;
 
   @Private boolean closed;
-
-  /**
-   * Constructs a new queue backed by the given file. Only one instance should access a given file
-   * at a time.
-   */
-  public QueueFile(File file) throws IOException {
-    this(file, true);
-  }
-
-  /**
-   * Constructs a new queue backed by the given file. Only one instance should access a given file
-   * at a time.
-   *
-   * @param zero When true, removing an element will also overwrite data with zero bytes.
-   */
-  public QueueFile(File file, boolean zero) throws IOException {
-    this(initializeFromFile(file), zero);
-  }
 
   private static RandomAccessFile initializeFromFile(File file) throws IOException {
     if (!file.exists()) {
@@ -636,6 +620,35 @@ public final class QueueFile implements Closeable, Iterable<byte[]> {
           + "[position=" + position
           + ", length=" + length
           + "]";
+    }
+  }
+
+  /** Fluent API for creating {@link QueueFile} instances. */
+  public static final class Builder {
+    final File file;
+    boolean zero = true;
+
+    /** Start constructing a new queue backed by the given file. */
+    public Builder(File file) {
+      if (file == null) {
+        throw new NullPointerException("file == null");
+      }
+      this.file = file;
+    }
+
+    /** When true, removing an element will also overwrite data with zero bytes. */
+    public Builder zero(boolean zero) {
+      this.zero = zero;
+      return this;
+    }
+
+    /**
+     * Constructs a new queue backed by the given builder. Only one instance should access a given
+     * file at a time.
+     */
+    public QueueFile build() throws IOException {
+      RandomAccessFile raf = initializeFromFile(file);
+      return new QueueFile(raf, zero);
     }
   }
 }

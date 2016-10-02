@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.squareup.tape2.QueueFile.Builder;
 import static com.squareup.tape2.QueueTestUtils.EMPTY_SERIALIZED_QUEUE;
 import static com.squareup.tape2.QueueTestUtils.FRESH_SERIALIZED_QUEUE;
 import static com.squareup.tape2.QueueTestUtils.ONE_ENTRY_SERIALIZED_QUEUE;
@@ -31,33 +32,33 @@ public class QueueFileLoadingTest {
     testFile = File.createTempFile(FRESH_SERIALIZED_QUEUE, "test");
     assertTrue(testFile.delete());
     assertFalse(testFile.exists());
-    QueueFile queue = new QueueFile(testFile);
+    QueueFile queue = new Builder(testFile).build();
     assertEquals(0, queue.size());
     assertTrue(testFile.exists());
   }
 
   @Test public void testEmptyFileInitializes() throws Exception {
     testFile = copyTestFile(EMPTY_SERIALIZED_QUEUE);
-    QueueFile queue = new QueueFile(testFile);
+    QueueFile queue = new Builder(testFile).build();
     assertEquals(0, queue.size());
   }
 
   @Test public void testSingleEntryFileInitializes() throws Exception {
     testFile = copyTestFile(ONE_ENTRY_SERIALIZED_QUEUE);
-    QueueFile queue = new QueueFile(testFile);
+    QueueFile queue = new Builder(testFile).build();
     assertEquals(1, queue.size());
   }
 
   @Test(expected = IOException.class)
   public void testTruncatedEmptyFileThrows() throws Exception {
     testFile = copyTestFile(TRUNCATED_EMPTY_SERIALIZED_QUEUE);
-    new QueueFile(testFile);
+    new Builder(testFile).build();
   }
 
   @Test(expected = IOException.class)
   public void testTruncatedOneEntryFileThrows() throws Exception {
     testFile = copyTestFile(TRUNCATED_ONE_ENTRY_SERIALIZED_QUEUE);
-    new QueueFile(testFile);
+    new Builder(testFile).build();
   }
 
   @Test(expected = IOException.class)
@@ -67,7 +68,7 @@ public class QueueFileLoadingTest {
 
     File tmp = new UndeletableFile(testFile.getAbsolutePath());
     // Should throw an exception.
-    new QueueFile(tmp);
+    new Builder(tmp).build();
   }
 
   @Test(expected = IOException.class)
@@ -76,7 +77,7 @@ public class QueueFileLoadingTest {
 
     // Should throw an exception.
     FileObjectQueue<String> qf =
-        new FileObjectQueue<String>(testFile, new FileObjectQueue.Converter<String>() {
+        new FileObjectQueue<>(testFile, new FileObjectQueue.Converter<String>() {
           @Override public String from(byte[] bytes) throws IOException {
             return null;
           }

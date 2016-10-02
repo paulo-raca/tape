@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.squareup.tape2.QueueFile.Builder;
 import static com.squareup.tape2.QueueFile.HEADER_LENGTH;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -59,17 +60,17 @@ import static org.junit.Assert.fail;
 
   @Test public void testAddOneElement() throws IOException {
     // This test ensures that we update 'first' correctly.
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     byte[] expected = values[253];
     queue.add(expected);
     assertThat(queue.peek()).isEqualTo(expected);
     queue.close();
-    queue = new QueueFile(file);
+    queue = new Builder(file).build();
     assertThat(queue.peek()).isEqualTo(expected);
   }
 
   @Test public void testClearErases() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     byte[] expected = values[253];
     queue.add(expected);
 
@@ -88,12 +89,12 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testClearDoesNotCorrupt() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     byte[] stuff = values[253];
     queue.add(stuff);
     queue.clear();
 
-    queue = new QueueFile(file);
+    queue = new Builder(file).build();
     assertThat(queue.isEmpty()).isTrue();
     assertThat(queue.peek()).isNull();
 
@@ -102,7 +103,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removeErasesEagerly() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     byte[] firstStuff = values[127];
     queue.add(firstStuff);
@@ -134,7 +135,7 @@ import static org.junit.Assert.fail;
     emptyFile.close();
 
     try {
-      new QueueFile(file);
+      new Builder(file).build();
       fail("Should have thrown about bad header length");
     } catch (IOException ex) {
       assertThat(ex).hasMessage("File is corrupt; length stored in header (0) is invalid.");
@@ -149,7 +150,7 @@ import static org.junit.Assert.fail;
     emptyFile.close();
 
     try {
-      new QueueFile(file);
+      new Builder(file).build();
       fail();
     } catch (IOException ex) {
       assertThat(ex).hasMessage("File is corrupt; length stored in header (15) is invalid.");
@@ -165,7 +166,7 @@ import static org.junit.Assert.fail;
     emptyFile.close();
 
     try {
-      new QueueFile(file);
+      new Builder(file).build();
       fail("Should have thrown about bad header length");
     } catch (IOException ex) {
       assertThat(ex) //
@@ -174,7 +175,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removeMultipleDoesNotCorrupt() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     for (int i = 0; i < 10; i++) {
       queue.add(values[i]);
     }
@@ -184,7 +185,7 @@ import static org.junit.Assert.fail;
     assertThat(queue.peek()).isEqualTo(values[1]);
 
     queue.remove(3);
-    queue = new QueueFile(file);
+    queue = new Builder(file).build();
     assertThat(queue.size()).isEqualTo(6);
     assertThat(queue.peek()).isEqualTo(values[4]);
 
@@ -194,19 +195,19 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removeDoesNotCorrupt() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     queue.add(values[127]);
     byte[] secondStuff = values[253];
     queue.add(secondStuff);
     queue.remove();
 
-    queue = new QueueFile(file);
+    queue = new Builder(file).build();
     assertThat(queue.peek()).isEqualTo(secondStuff);
   }
 
   @Test public void removeFromEmptyFileThrows() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     try {
       queue.remove();
@@ -216,7 +217,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removeNegativeNumberOfElementsThrows() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     queue.add(values[127]);
 
     try {
@@ -229,7 +230,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removeZeroElementsDoesNothing() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     queue.add(values[127]);
 
     queue.remove(0);
@@ -237,7 +238,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removeBeyondQueueSizeElementsThrows() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     queue.add(values[127]);
 
     try {
@@ -255,7 +256,7 @@ import static org.junit.Assert.fail;
       System.arraycopy(values[100], 0, bigBoy, i, values[100].length);
     }
 
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     queue.add(bigBoy);
     byte[] secondStuff = values[123];
@@ -284,7 +285,7 @@ import static org.junit.Assert.fail;
     Queue<byte[]> expected = new LinkedList<byte[]>();
 
     for (int round = 0; round < 5; round++) {
-      QueueFile queue = new QueueFile(file);
+      QueueFile queue = new Builder(file).build();
       for (int i = 0; i < N; i++) {
         queue.add(values[i]);
         expected.add(values[i]);
@@ -300,7 +301,7 @@ import static org.junit.Assert.fail;
     }
 
     // Remove and validate remaining 15 elements.
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
     assertThat(queue.size()).isEqualTo(15);
     assertThat(queue.size()).isEqualTo(expected.size());
     while (!expected.isEmpty()) {
@@ -321,7 +322,7 @@ import static org.junit.Assert.fail;
     int max = 80;
 
     Queue<byte[]> expected = new LinkedList<byte[]>();
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     for (int i = 0; i < max; i++) {
       expected.add(values[i]);
@@ -349,7 +350,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testFailedAdd() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     queueFile.add(values[253]);
     queueFile.close();
 
@@ -368,7 +369,7 @@ import static org.junit.Assert.fail;
 
     queueFile.close();
 
-    queueFile = new QueueFile(file);
+    queueFile = new Builder(file).build();
     Assertions.assertThat(queueFile.size()).isEqualTo(2);
     assertThat(queueFile.peek()).isEqualTo(values[253]);
     queueFile.remove();
@@ -376,7 +377,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testFailedRemoval() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     queueFile.add(values[253]);
     queueFile.close();
 
@@ -390,7 +391,7 @@ import static org.junit.Assert.fail;
 
     queueFile.close();
 
-    queueFile = new QueueFile(file);
+    queueFile = new Builder(file).build();
     assertThat(queueFile.size()).isEqualTo(1);
     assertThat(queueFile.peek()).isEqualTo(values[253]);
 
@@ -400,7 +401,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testFailedExpansion() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     queueFile.add(values[253]);
     queueFile.close();
 
@@ -415,7 +416,7 @@ import static org.junit.Assert.fail;
 
     queueFile.close();
 
-    queueFile = new QueueFile(file);
+    queueFile = new Builder(file).build();
 
     assertThat(queueFile.size()).isEqualTo(1);
     assertThat(queueFile.peek()).isEqualTo(values[253]);
@@ -433,7 +434,7 @@ import static org.junit.Assert.fail;
    */
   @Test public void testFileExpansionDoesntCorruptWrappedElements()
       throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     // Create test data - 1k blocks marked consecutively 1, 2, 3, 4 and 5.
     byte[][] values = new byte[5][];
@@ -482,7 +483,7 @@ import static org.junit.Assert.fail;
    * expansion correctly update all their positions?
    */
   @Test public void testFileExpansionCorrectlyMovesElements() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     // Create test data - 1k blocks marked consecutively 1, 2, 3, 4 and 5.
     byte[][] values = new byte[5][];
@@ -542,7 +543,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removingElementZeroesData() throws IOException {
-    QueueFile queueFile = new QueueFile(file, true);
+    QueueFile queueFile = new Builder(file).zero(true).build();
     queueFile.add(values[4]);
     queueFile.remove();
     queueFile.close();
@@ -559,7 +560,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void removingElementDoesNotZeroData() throws IOException {
-    QueueFile queueFile = new QueueFile(file, false);
+    QueueFile queueFile = new Builder(file).zero(false).build();
     queueFile.add(values[4]);
     queueFile.remove();
     queueFile.close();
@@ -581,7 +582,7 @@ import static org.junit.Assert.fail;
    */
   @Test public void testFileExpansionCorrectlyZeroesData()
       throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     // Create test data - 1k blocks marked consecutively 1, 2, 3, 4 and 5.
     byte[][] values = new byte[5][];
@@ -630,7 +631,7 @@ import static org.junit.Assert.fail;
    * are the same causes corruption.
    */
   @Test public void testSaturatedFileExpansionMovesElements() throws IOException {
-    QueueFile queue = new QueueFile(file);
+    QueueFile queue = new Builder(file).build();
 
     // Create test data - 1016-byte blocks marked consecutively 1, 2, 3, 4, 5 and 6,
     // four of which perfectly fill the queue file, taking into account the file header
@@ -674,7 +675,7 @@ import static org.junit.Assert.fail;
    * was non contiguous throws an {@link java.io.EOFException}.
    */
   @Test public void testReadHeadersFromNonContiguousQueueWorks() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
 
     // Fill the queue up to `length - 2` (i.e. remainingBytes() == 2).
     for (int i = 0; i < 15; i++) {
@@ -691,7 +692,7 @@ import static org.junit.Assert.fail;
     queueFile.close();
 
     // File should not be corrupted.
-    QueueFile queueFile2 = new QueueFile(file);
+    QueueFile queueFile2 = new Builder(file).build();
     assertThat(queueFile2.size()).isEqualTo(queueSize);
   }
 
@@ -699,7 +700,7 @@ import static org.junit.Assert.fail;
     byte[] data = values[10];
 
     for (int i = 0; i < 10; i++) {
-      QueueFile queueFile = new QueueFile(file);
+      QueueFile queueFile = new Builder(file).build();
       for (int j = 0; j < i; j++) {
         queueFile.add(data);
       }
@@ -715,7 +716,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testIteratorNextThrowsWhenEmpty() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
 
     Iterator<byte[]> iterator = queueFile.iterator();
 
@@ -727,7 +728,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testIteratorNextThrowsWhenExhausted() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     queueFile.add(values[0]);
 
     Iterator<byte[]> iterator = queueFile.iterator();
@@ -741,7 +742,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testIteratorRemove() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     for (int i = 0; i < 15; i++) {
       queueFile.add(values[i]);
     }
@@ -756,7 +757,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testIteratorRemoveDisallowsConcurrentModification() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     for (int i = 0; i < 15; i++) {
       queueFile.add(values[i]);
     }
@@ -772,7 +773,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testIteratorHasNextDisallowsConcurrentModification() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     for (int i = 0; i < 15; i++) {
       queueFile.add(values[i]);
     }
@@ -788,7 +789,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testIteratorDisallowsConcurrentModificationWithClear() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     for (int i = 0; i < 15; i++) {
       queueFile.add(values[i]);
     }
@@ -804,7 +805,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void testIteratorOnlyRemovesFromHead() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     for (int i = 0; i < 15; i++) {
       queueFile.add(values[i]);
     }
@@ -822,7 +823,7 @@ import static org.junit.Assert.fail;
   }
 
   @Test public void queueToString() throws IOException {
-    QueueFile queueFile = new QueueFile(file);
+    QueueFile queueFile = new Builder(file).build();
     for (int i = 0; i < 15; i++) {
       queueFile.add(values[i]);
     }
