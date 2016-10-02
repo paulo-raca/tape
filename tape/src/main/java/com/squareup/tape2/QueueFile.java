@@ -88,6 +88,9 @@ public final class QueueFile implements Closeable, Iterable<byte[]> {
    */
   final RandomAccessFile raf;
 
+  /** Keep file around for error reporting. */
+  final File file;
+
   /** Cached file length. Always a power of 2. */
   int fileLength;
 
@@ -142,7 +145,8 @@ public final class QueueFile implements Closeable, Iterable<byte[]> {
     return new RandomAccessFile(file, "rwd");
   }
 
-  QueueFile(RandomAccessFile raf, boolean zero) throws IOException {
+  QueueFile(File file, RandomAccessFile raf, boolean zero) throws IOException {
+    this.file = file;
     this.raf = raf;
     this.zero = zero;
 
@@ -577,6 +581,11 @@ public final class QueueFile implements Closeable, Iterable<byte[]> {
     modCount++;
   }
 
+  /** The underlying {@link File} backing this queue. */
+  public File file() {
+    return file;
+  }
+
   @Override public void close() throws IOException {
     closed = true;
     raf.close();
@@ -648,7 +657,7 @@ public final class QueueFile implements Closeable, Iterable<byte[]> {
      */
     public QueueFile build() throws IOException {
       RandomAccessFile raf = initializeFromFile(file);
-      return new QueueFile(raf, zero);
+      return new QueueFile(file, raf, zero);
     }
   }
 }

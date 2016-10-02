@@ -355,7 +355,7 @@ import static org.junit.Assert.fail;
     queueFile.close();
 
     final BrokenRandomAccessFile braf = new BrokenRandomAccessFile(file, "rwd");
-    queueFile = new QueueFile(braf, true);
+    queueFile = new QueueFile(null, braf, true);
 
     try {
       queueFile.add(values[252]);
@@ -382,7 +382,7 @@ import static org.junit.Assert.fail;
     queueFile.close();
 
     final BrokenRandomAccessFile braf = new BrokenRandomAccessFile(file, "rwd");
-    queueFile = new QueueFile(braf, true);
+    queueFile = new QueueFile(null, braf, true);
 
     try {
       queueFile.remove();
@@ -406,7 +406,7 @@ import static org.junit.Assert.fail;
     queueFile.close();
 
     final BrokenRandomAccessFile braf = new BrokenRandomAccessFile(file, "rwd");
-    queueFile = new QueueFile(braf, true);
+    queueFile = new QueueFile(null, braf, true);
 
     try {
       // This should trigger an expansion which should fail.

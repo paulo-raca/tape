@@ -12,18 +12,16 @@ final class FileObjectQueue<T> extends ObjectQueue<T> {
   private final QueueFile queueFile;
   /** Reusable byte output buffer. */
   private final DirectByteArrayOutputStream bytes = new DirectByteArrayOutputStream();
-  /** Keep file around for error reporting. */
-  private final File file;
+  /** Converts between bytes and objects. */
   @Private final Converter<T> converter;
 
   FileObjectQueue(File file, Converter<T> converter) throws IOException {
-    this.file = file;
     this.converter = converter;
     this.queueFile = new QueueFile.Builder(file).build();
   }
 
   @Override public File file() {
-    return file;
+    return queueFile.file();
   }
 
   @Override public int size() {
